@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kitapik'e Hoş Geldin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #FFF5EE;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .logo-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .logo-title img {
+      width: 60px;
+      height: auto;
+    }
+
+    h1 {
+      font-size: 32px;
+      color: #E76F51;
+      margin: 0;
+    }
+
+    p {
+      font-size: 18px;
+      color: #444;
+      margin: 10px 0 25px;
+    }
+
+    button {
+      background-color: #F4A261;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #E76F51;
+    }
+
+    .book-gif {
+      margin-top: 40px;
+    }
+
+    .book-gif img {
+      background-color: transparent;
+      box-shadow: none;
+      width: 320px;
+      border-radius: 10px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo-title">
+    <img src="logo.png" alt="Kitapik Logo">
+    <h1>Kitapik'e Hoş Geldin!</h1>
+  </div>
+
+  <p>Kitap dünyasına adım at 🧡</p>
+  <button onclick="window.location.href='index.html'">Kitapları Keşfet</button>
+
+  <div class="book-gif">
+    <img src="kitap-animasyon_transparent.gif" alt="Kitap animasyonu" width="200">
+  </div>
+
+</body>
+</html>
