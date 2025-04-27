@@ -1,1 +1,0 @@
-// Ortak JavaScript işlemleri buraya gelecek
