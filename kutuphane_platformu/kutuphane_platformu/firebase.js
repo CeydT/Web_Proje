@@ -1,1 +1,0 @@
-// Firebase bağlantısı buraya gelecek
