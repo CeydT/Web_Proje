@@ -1,1 +1,332 @@
-<!-- admin_panel.html içeriği buraya gelecek -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kitapik Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #FFF5EE;
+    }
+    .sidebar {
+      width: 220px;
+      background-color: #E76F51;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .sidebar h2 { font-size: 20px; }
+    .sidebar button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      text-align: left;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+    .sidebar button:hover { background-color: #f28b66; }
+    .content { flex: 1; padding: 30px; overflow-y: auto; }
+    .hidden { display: none; }
+    .book-grid { display: flex; flex-wrap: wrap; gap: 20px; }
+    .book-card {
+      width: 180px;
+      height: 270px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+    .book-inner {
+      width: 100%; height: 100%;
+      position: relative;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+    .book-front, .book-back {
+      position: absolute;
+      width: 100%; height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .book-front {
+      background: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      text-align: center;
+    }
+    .book-front img {
+      width: 100px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .book-front h4 { font-size: 16px; margin: 10px 0 5px; }
+    .book-front p { font-size: 14px; color: #555; }
+    .book-back {
+      background: #fefefe;
+      transform: rotateY(180deg);
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      scrollbar-width: thin;
+      scrollbar-color: #E76F51 #f5f5f5;
+    }
+    .book-back::-webkit-scrollbar { width: 6px; }
+    .book-back::-webkit-scrollbar-thumb {
+      background-color: #E76F51;
+      border-radius: 10px;
+    }
+    .book-back p { font-size: 13px; color: #444; }
+    form input, form textarea {
+      width: 100%;
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    form button {
+      background-color: #E76F51;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .modal {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .modal.hidden { display: none; }
+    .modal-content {
+      background-color: white;
+      display: flex;
+      gap: 20px;
+      padding: 24px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+    }
+    .modal-content img {
+      width: 130px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .modal-content form { flex: 1; }
+  </style>
+</head>
+<body>
+  <div id="editModal" class="modal hidden">
+    <div class="modal-content">
+      <img id="editImagePreview" src="" alt="Kitap Kapak" />
+      <form id="editForm">
+        <input type="text" id="editTitle" placeholder="Kitap Adı" required />
+        <input type="text" id="editAuthor" placeholder="Yazar Adı" required />
+        <input type="text" id="editCategory" placeholder="Kategori" required />
+        <textarea id="editSummary" rows="4" placeholder="Özet" required></textarea>
+        <button type="submit">💾 Güncelle</button>
+        <button type="button" onclick="deleteCurrentBook()">🗑️ Sil</button>
+        <button type="button" onclick="closeModal()">İptal</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <h2>📚 Kitapik</h2>
+    <button onclick="showSection('books')">📘 Kitaplar</button>
+    <button onclick="showSection('add')">➕ Kitap Ekle</button>
+  </div>
+
+  <div class="content">
+    <section id="booksSection" class="hidden">
+      <h2>📘 Tüm Kitaplar</h2>
+      <input type="text" id="searchInput" placeholder="Kitap ara..." style="margin-bottom: 20px; padding: 10px; width: 100%; max-width: 400px; border-radius: 8px; border: 1px solid #ccc;" />
+      <div class="book-grid" id="bookList"></div>
+    </section>
+
+    <section id="addSection">
+      <h2>➕ Yeni Kitap Ekle</h2>
+      <form id="bookForm">
+        <input type="text" id="title" placeholder="Kitap Adı" required />
+        <input type="text" id="author" placeholder="Yazar Adı" required />
+        <input type="text" id="category" placeholder="Kategori" required />
+        <textarea id="summary" placeholder="Özet" rows="4" required></textarea>
+        <input type="file" id="coverImage" accept="image/*" required />
+        <button type="submit">Kaydet</button>
+</form>
+<div id="successMessage" style="display:none; margin-top:10px; color:green; font-weight:bold;">✅ Kitap başarıyla eklendi!</div>
+    </section>
+  </div>
+
+  <script type="module">
+    window.showSection = (id) => {
+      document.getElementById("booksSection").classList.add("hidden");
+      document.getElementById("addSection").classList.add("hidden");
+      if (id === 'books') document.getElementById("booksSection").classList.remove("hidden");
+      if (id === 'add') document.getElementById("addSection").classList.remove("hidden");
+    };
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGaABAAeyoYRaVTIqUIZtuRn9PMXrL_10",
+      authDomain: "kutuphane-admin.firebaseapp.com",
+      projectId: "kutuphane-admin",
+      storageBucket: "kutuphane-admin.firebasestorage.app",
+      messagingSenderId: "815401267901",
+      appId: "1:815401267901:web:98a3c0e56a5f96ec633dd4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app, "gs://kutuphane-admin.firebasestorage.app");
+    let currentEditId = null;
+
+    window.deleteCurrentBook = async () => {
+      if (!currentEditId) return;
+      const confirmDelete = confirm("Bu kitabı silmek istediğinize emin misiniz?");
+      if (!confirmDelete) return;
+      await deleteDoc(doc(db, "books", currentEditId));
+      closeModal();
+      loadBooks();
+    };
+
+    async function loadBooks() {
+      const bookList = document.getElementById("bookList");
+      const searchInput = document.getElementById("searchInput");
+      const querySnapshot = await getDocs(collection(db, "books"));
+
+      const books = [];
+      querySnapshot.forEach((docSnap) => {
+        books.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      function renderBooks(filteredBooks) {
+        bookList.innerHTML = "";
+        filteredBooks.forEach((book) => {
+          const card = document.createElement("div");
+          card.className = "book-card";
+          card.onclick = () => editBook(book.id);
+          card.innerHTML = `
+            <div class="book-inner">
+              <div class="book-front">
+                <img src="${book.coverImageUrl}" alt="${book.title}">
+                <h4>${book.title}</h4>
+                <p>${book.author}</p>
+              </div>
+            </div>
+          `;
+          bookList.appendChild(card);
+        });
+      }
+
+      renderBooks(books);
+
+      searchInput.addEventListener("input", () => {
+        const keyword = searchInput.value.toLowerCase();
+        const filtered = books.filter(b =>
+          b.title.toLowerCase().includes(keyword)
+        );
+        renderBooks(filtered);
+      });
+    }
+
+    window.editBook = async (id) => {
+      const docRef = doc(db, "books", id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const book = docSnap.data();
+        currentEditId = id;
+        document.getElementById("editTitle").value = book.title;
+        document.getElementById("editAuthor").value = book.author;
+        document.getElementById("editCategory").value = book.category;
+        document.getElementById("editSummary").value = book.summary;
+        document.getElementById("editImagePreview").src = book.coverImageUrl;
+        document.getElementById("editModal").classList.remove("hidden");
+      }
+    };
+
+    window.closeModal = () => {
+      document.getElementById("editModal").classList.add("hidden");
+    };
+
+    document.getElementById("editForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentEditId) return;
+      const updatedData = {
+        title: document.getElementById("editTitle").value,
+        author: document.getElementById("editAuthor").value,
+        category: document.getElementById("editCategory").value,
+        summary: document.getElementById("editSummary").value
+      };
+      await updateDoc(doc(db, "books", currentEditId), updatedData);
+      closeModal();
+      loadBooks();
+    });
+
+    document.getElementById("bookForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const author = document.getElementById("author").value;
+      const category = document.getElementById("category").value;
+      const summary = document.getElementById("summary").value;
+      const imageFile = document.getElementById("coverImage").files[0];
+
+      if (!imageFile) {
+        alert("Kapak görseli seçilmedi.");
+        return;
+      }
+
+      const imageRef = ref(storage, `bookCovers/${imageFile.name}`);
+      await uploadBytes(imageRef, imageFile);
+      const imageUrl = await getDownloadURL(imageRef);
+
+      await addDoc(collection(db, "books"), {
+        title, author, category, summary, coverImageUrl: imageUrl
+      });
+
+      document.getElementById("bookForm").reset();
+document.getElementById("successMessage").style.display = "block";
+setTimeout(() => {
+  document.getElementById("successMessage").style.display = "none";
+}, 3000);
+      loadBooks();
+      // showSection('books'); // Bu satır kaldırıldı, ekleme sonrası formda kalınacak
+    });
+
+    window.addEventListener("load", () => {
+      loadBooks();
+      // showSection('books'); // Bu satır kaldırıldı, ekleme sonrası formda kalınacak
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+  </script>
+</body>
+</html>

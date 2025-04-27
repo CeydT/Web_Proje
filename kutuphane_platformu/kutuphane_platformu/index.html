@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -7,13 +6,16 @@
   <title>Kitapik - Kitaplar</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
       background-color: #FFF5EE;
       color: #333;
     }
+
     header {
       display: flex;
       justify-content: space-between;
@@ -25,62 +27,48 @@
       top: 0;
       z-index: 100;
     }
-    .logo-area {
+
+    header .logo-area {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    .logo-area img { height: 40px; }
-    .logo-area span {
+
+    header .logo-area img {
+      height: 40px;
+    }
+
+    header .logo-area span {
       font-size: 20px;
       font-weight: 600;
       color: #E76F51;
     }
-    #profileMenu {
-      position: relative;
+
+    .btns {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
-    #profileName {
-      font-size: 14px;
-      color: #444;
-    }
-    #profileIcon {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-    .menu-dropdown {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 50px;
-      background-color: white;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+
+    .btns a {
+      padding: 8px 16px;
       border-radius: 8px;
-      overflow: hidden;
-      min-width: 180px;
-      z-index: 1000;
-    }
-    .menu-dropdown a {
-      display: block;
-      padding: 12px 16px;
-      text-decoration: none;
-      color: #333;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
-    .menu-dropdown a:hover {
       background-color: #F4A261;
       color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
     }
+
+    .btns a:hover {
+      background-color: #E76F51;
+    }
+
     main {
       padding: 30px 40px;
       max-width: 1200px;
       margin: auto;
     }
+
     #search {
       padding: 14px;
       width: 100%;
@@ -89,11 +77,13 @@
       border: 1px solid #ccc;
       margin-bottom: 30px;
     }
+
     .book-list {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 30px;
     }
+
     .book-card {
       background-color: white;
       border-radius: 14px;
@@ -102,9 +92,11 @@
       text-align: center;
       transition: transform 0.3s ease;
     }
+
     .book-card:hover {
       transform: translateY(-5px);
     }
+
     .book-card img {
       width: 100px;
       height: 140px;
@@ -112,10 +104,12 @@
       border-radius: 8px;
       margin-bottom: 12px;
     }
+
     .book-card h4 {
       font-size: 16px;
       margin: 8px 0 4px;
     }
+
     .book-card p {
       font-size: 14px;
       color: #666;
@@ -124,29 +118,28 @@
   </style>
 </head>
 <body>
+
   <header>
     <div class="logo-area">
       <img src="logo.png" alt="Kitapik Logo" />
       <span>Kitapik</span>
     </div>
-    <div id="profileMenu">
-      <img src="profil.png" id="profileIcon" alt="Profil" />
-      <span id="profileName"></span>
-      <div class="menu-dropdown" id="dropdown">
-        <a href="#">📖 Okuduklarım</a>
-        <a href="#">🛠️ Bilgilerimi Güncelle</a>
-        <a href="giris.html" onclick="logout()">🚪 Çıkış Yap</a>
-      </div>
+    <div class="btns">
+      <a href="giris.html">Oturum Aç</a>
+      <a href="kayit.html">Kaydol</a>
     </div>
   </header>
+
   <main>
     <input type="text" id="search" placeholder="🔍 Kitap ara...">
-    <div class="book-list" id="bookList"></div>
+    <div class="book-list" id="bookList">
+      <!-- Kitap kartları burada gösterilecek -->
+    </div>
   </main>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAGaABAAeyoYRaVTIqUIZtuRn9PMXrL_10",
@@ -159,12 +152,13 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
+
+    let allBooks = [];
 
     async function fetchBooks() {
       const querySnapshot = await getDocs(collection(db, "books"));
-      const books = querySnapshot.docs.map(doc => doc.data());
-      renderBooks(books);
+      allBooks = querySnapshot.docs.map(doc => doc.data());
+      renderBooks(allBooks);
     }
 
     function renderBooks(books) {
@@ -173,7 +167,11 @@
       books.forEach(book => {
         const card = document.createElement("div");
         card.className = "book-card";
-        card.innerHTML = `<img src="${book.coverImageUrl}" alt="${book.title}"><h4>${book.title}</h4><p>${book.author}</p>`;
+        card.innerHTML = `
+          <img src="${book.coverImageUrl}" alt="${book.title}">
+          <h4>${book.title}</h4>
+          <p>${book.author}</p>
+        `;
         list.appendChild(card);
       });
     }
@@ -184,34 +182,8 @@
       renderBooks(filtered);
     });
 
-    document.getElementById("profileIcon").addEventListener("click", () => {
-      const dropdown = document.getElementById("dropdown");
-      dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-    });
-
-    window.addEventListener("click", (e) => {
-      if (!document.getElementById("profileMenu").contains(e.target)) {
-        document.getElementById("dropdown").style.display = "none";
-      }
-    });
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const uid = user.uid;
-        const userDoc = await getDoc(doc(db, "users", uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          document.getElementById("profileIcon").src = userData.avatar || "profil.png";
-          document.getElementById("profileName").textContent = userData.fullname || "Kullanıcı";
-        }
-      }
-    });
-
-    window.logout = function () {
-      signOut(auth);
-    };
-
     fetchBooks();
   </script>
+
 </body>
 </html>

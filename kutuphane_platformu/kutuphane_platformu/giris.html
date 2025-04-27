@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kitapik | Giriş Yap</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
@@ -99,28 +99,15 @@
     const auth = getAuth(app);
 
     window.login = function () {
-      const email = document.getElementById("email").value.trim();
+      const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-
-      if (!email || !password) {
-        alert("Lütfen tüm alanları doldurun.");
-        return;
-      }
 
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
-          // Başarılı giriş
-          alert("Giriş başarılı. Kitaplara yönlendiriliyorsunuz 📚");
           window.location.href = "index.html";
         })
         .catch((error) => {
-          if (error.code === "auth/user-not-found") {
-            alert("Kullanıcı bulunamadı. Lütfen kayıt olun.");
-          } else if (error.code === "auth/wrong-password") {
-            alert("Hatalı şifre girdiniz.");
-          } else {
-            alert("Giriş başarısız: " + error.message);
-          }
+          alert("Giriş başarısız: " + error.message);
         });
     };
   </script>
